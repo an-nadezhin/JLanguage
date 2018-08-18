@@ -6,8 +6,8 @@ import java.io.StringReader;
 
 public class LexAnalyzer {
 
-    private static int ch;
-    private static LineNumberReader sym;
+    private int ch;
+    private LineNumberReader sym;
 
     public enum Lex {
         L_ADD,
@@ -15,18 +15,20 @@ public class LexAnalyzer {
         L_MUL,
         L_DIV,
         L_CONST,
+        L_LEFT_PARENTHESIS,
+        L_RIGHT_PARENTHESIS,
         L_NOT_IMPLEMENTED
     }
 
-    public static Lex lex;
-    public static StringBuilder number;
+    public Lex lex;
+    public StringBuilder number;
 
     public LexAnalyzer(StringReader name) {
         sym = new LineNumberReader(name);
         number = new StringBuilder();
     }
 
-    public static Lex nextLex() throws IOException {
+    public Lex nextLex() throws IOException {
 
         ch = sym.read();
         skipSp();
@@ -39,6 +41,10 @@ public class LexAnalyzer {
                 return lex = Lex.L_MUL;
             case '/':
                 return lex = Lex.L_DIV;
+            case '(':
+                return lex = Lex.L_LEFT_PARENTHESIS;
+            case ')':
+                return lex = Lex.L_RIGHT_PARENTHESIS;
         }
 
         if (ch >= '0' && ch <= '9') {
@@ -59,9 +65,13 @@ public class LexAnalyzer {
         return lex = Lex.L_NOT_IMPLEMENTED;
     }
 
-    private static void skipSp() throws IOException {
+    private void skipSp() throws IOException {
         while (ch == ' ' || ch == '\n' || ch == '\t') {
             ch = sym.read();
         }
+    }
+    public void expect(Lex l) throws IOException {
+        assert lex == l;
+        nextLex();
     }
 }

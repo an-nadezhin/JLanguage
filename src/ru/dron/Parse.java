@@ -6,47 +6,69 @@ import java.io.StringReader;
 
 public class Parse {
 
-    public static double getN() throws IOException {
-        double value = Double.parseDouble(new String(LexAnalyzer.number));
-        LexAnalyzer.nextLex();
-        return value;
+    LexAnalyzer LexAn;
+
+    public Parse(StringReader readStr) throws IOException {
+        LexAn = new LexAnalyzer(readStr);
+        LexAn.nextLex();
     }
 
-    public static double getE() throws IOException {
-        double val1 = getT();
-
-        if (LexAnalyzer.lex == LexAnalyzer.Lex.L_ADD) {
-            LexAnalyzer.nextLex();
-            double val2 = getE();
-            val1 += val2;
-        }
-        if(LexAnalyzer.lex == LexAnalyzer.Lex.L_SUB) {
-            LexAnalyzer.nextLex();
-            double val2 = getE();
-            val1 -= val2;
-        }
-        return val1;
-    }
-
-    public static double getT() throws IOException {
-        double val1 = getN();
-
-        if (LexAnalyzer.lex == LexAnalyzer.Lex.L_MUL) {
-            LexAnalyzer.nextLex();
-            double val2 = getT();
-            val1 *= val2;
-        }
-        if(LexAnalyzer.lex == LexAnalyzer.Lex.L_DIV) {
-            LexAnalyzer.nextLex();
-            double val2 = getT();
-            val1 /= val2;
-        }
-      return val1;
-    }
-
-    public static double getG0(StringReader readStr) throws IOException{
-        new LexAnalyzer(readStr);
-        LexAnalyzer.nextLex();
+    public double getG0() throws IOException {
         return getE();
+    }
+
+    public double getE() throws IOException {
+        double val = getT();
+
+        while (LexAn.lex == LexAnalyzer.Lex.L_ADD || LexAn.lex == LexAnalyzer.Lex.L_SUB) {
+            if(LexAn.lex == LexAnalyzer.Lex.L_ADD) {
+                LexAn.nextLex();
+                double val2 = getT();
+                val += val2;
+            }
+            if(LexAn.lex == LexAnalyzer.Lex.L_SUB) {
+                LexAn.nextLex();
+                double val2 = getT();
+                val -= val2;
+            }
+        }
+        return val;
+    }
+
+    public double getT() throws IOException {
+        double val = getP();
+
+        while (LexAn.lex == LexAnalyzer.Lex.L_MUL || LexAn.lex == LexAnalyzer.Lex.L_DIV) {
+            if (LexAn.lex == LexAnalyzer.Lex.L_MUL) {
+                LexAn.nextLex();
+                double val2 = getP();
+                val *= val2;
+            }
+            if (LexAn.lex == LexAnalyzer.Lex.L_DIV) {
+                LexAn.nextLex();
+                double val2 = getP();
+                assert (val2 == 0);
+                val /= val2;
+            }
+        }
+      return val;
+    }
+
+    public double getP() throws IOException {
+        double val;
+        if (LexAn.lex == LexAnalyzer.Lex.L_LEFT_PARENTHESIS) {
+            LexAn.nextLex();
+            val = getE();
+            LexAn.expect(LexAnalyzer.Lex.L_RIGHT_PARENTHESIS);
+        } else {
+            val = getN();
+        }
+        return val;
+    }
+
+    public double getN() throws IOException {
+        double value = Double.parseDouble(new String(LexAn.number));
+        LexAn.nextLex();
+        return value;
     }
 }
