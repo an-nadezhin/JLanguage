@@ -2,7 +2,7 @@ package ru.dron;
 
 import java.io.IOException;
 import java.io.LineNumberReader;
-import java.io.StringReader;
+import java.io.Reader;
 
 public class LexAnalyzer {
 
@@ -23,7 +23,7 @@ public class LexAnalyzer {
     public Lex lex;
     public StringBuilder number;
 
-    public LexAnalyzer(StringReader name) {
+    public LexAnalyzer(Reader name) {
         sym = new LineNumberReader(name);
         number = new StringBuilder();
     }
@@ -49,15 +49,17 @@ public class LexAnalyzer {
 
         if (ch >= '0' && ch <= '9') {
             number.setLength(0);
+            boolean dot = false;
             while (ch >= '0' && ch <= '9') {
                 number.append(ch - '0');
                 sym.mark(1);
                 ch = sym.read();
                 if (ch == '.') {
+                    Error(dot == true, "Second dot in number");
                     number.append('.');
                     ch = sym.read();
+                    dot = true;
                 }
-                skipSp();
             }
             sym.reset();
             return lex = Lex.L_CONST;
@@ -70,8 +72,12 @@ public class LexAnalyzer {
             ch = sym.read();
         }
     }
-    public void expect(Lex l) throws IOException {
-        assert lex == l;
+    public void expect(Lex l) throws IOException, RuntimeException {
+        Error(l != lex, "ERROR : expect lex not found!");
         nextLex();
+    }
+
+    private void Error(boolean condition, String messege) {
+        if(condition == true) throw new RuntimeException(messege);
     }
 }

@@ -1,61 +1,60 @@
 package ru.dron;
 
 import java.io.IOException;
-import java.io.StringReader;
+import java.io.Reader;
 
 
 public class Parse {
 
     LexAnalyzer LexAn;
 
-    public Parse(StringReader readStr) throws IOException {
+    public Parse(Reader readStr) throws IOException {
         LexAn = new LexAnalyzer(readStr);
         LexAn.nextLex();
     }
 
-    public double getG0() throws IOException {
+    public Expression getG0() throws IOException {
         return getE();
     }
 
-    public double getE() throws IOException {
-        double val = getT();
+    public Expression getE() throws IOException {
+        Expression val = getT();
 
         while (LexAn.lex == LexAnalyzer.Lex.L_ADD || LexAn.lex == LexAnalyzer.Lex.L_SUB) {
             if(LexAn.lex == LexAnalyzer.Lex.L_ADD) {
                 LexAn.nextLex();
-                double val2 = getT();
-                val += val2;
+                Expression val2 = getT();
+                return new OpertorBin(LexAnalyzer.Lex.L_ADD, val, val2);
             }
             if(LexAn.lex == LexAnalyzer.Lex.L_SUB) {
                 LexAn.nextLex();
-                double val2 = getT();
-                val -= val2;
+                Expression val2 = getT();
+                return new OpertorBin(LexAnalyzer.Lex.L_SUB, val, val2);
             }
         }
         return val;
     }
 
-    public double getT() throws IOException {
-        double val = getP();
+    public Expression getT() throws IOException {
+        Expression val = getP();
 
         while (LexAn.lex == LexAnalyzer.Lex.L_MUL || LexAn.lex == LexAnalyzer.Lex.L_DIV) {
             if (LexAn.lex == LexAnalyzer.Lex.L_MUL) {
                 LexAn.nextLex();
-                double val2 = getP();
-                val *= val2;
+                Expression val2 = getP();
+                return new OpertorBin(LexAnalyzer.Lex.L_MUL, val, val2);
             }
             if (LexAn.lex == LexAnalyzer.Lex.L_DIV) {
                 LexAn.nextLex();
-                double val2 = getP();
-                assert (val2 == 0);
-                val /= val2;
+                Expression val2 = getP();
+                return new OpertorBin(LexAnalyzer.Lex.L_DIV, val, val2);
             }
         }
       return val;
     }
 
-    public double getP() throws IOException {
-        double val;
+    public Expression getP() throws IOException {
+        Expression val;
         if (LexAn.lex == LexAnalyzer.Lex.L_LEFT_PARENTHESIS) {
             LexAn.nextLex();
             val = getE();
@@ -66,9 +65,9 @@ public class Parse {
         return val;
     }
 
-    public double getN() throws IOException {
+    public Expression getN() throws IOException {
         double value = Double.parseDouble(new String(LexAn.number));
         LexAn.nextLex();
-        return value;
+        return new Number(value);
     }
 }
