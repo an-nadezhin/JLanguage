@@ -1,7 +1,11 @@
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.MethodVisitor;
 import ru.dron.Node;
 import ru.dron.Parse;
 
 import java.io.*;
+
+import static org.objectweb.asm.Opcodes.*;
 
 
 public class Language {
@@ -16,13 +20,34 @@ public class Language {
         Runtime.getRuntime().exec("evince graph.ps");
     }
 
+    static void genBytecode(Node node) throws IOException {
+        ClassWriter cw = new ClassWriter(0);
+
+        cw.visit(V1_6, ACC_PUBLIC + ACC_SUPER, "ownLangProg", null, "java/lang/Object", null);
+
+        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC + ACC_STATIC, "main", "([Ljava/lang/String;)V", null, null);
+        mv.visitCode();
+        node.genCode(mv);
+        mv.visitInsn(RETURN);
+        mv.visitMaxs(2, 1);
+        mv.visitEnd();
+
+        cw.visitEnd();
+
+        //save bytecode into disk
+        FileOutputStream out = new FileOutputStream("ownLangProg.class");
+        out.write(cw.toByteArray());
+        out.close();
+    }
+
     public static void main(String[] args) throws IOException {
 
-        Reader readStr = new StringReader("10 + 3 - 4*2/5 + 6");
+        Reader readStr = new StringReader("10 * (3 + 2) * 4 / 3");
 
         Parse parse = new Parse(readStr);
         Node result = parse.getG0();
         printJpeg(result);
+        genBytecode(result);
     }
 
 
