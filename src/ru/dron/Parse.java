@@ -21,15 +21,15 @@ public class Parse {
         Expression val = getT();
 
         while (LexAn.lex == LexAnalyzer.Lex.L_ADD || LexAn.lex == LexAnalyzer.Lex.L_SUB) {
-            if(LexAn.lex == LexAnalyzer.Lex.L_ADD) {
+            if (LexAn.lex == LexAnalyzer.Lex.L_ADD) {
                 LexAn.nextLex();
                 Expression val2 = getT();
-                return new OpertorBin(LexAnalyzer.Lex.L_ADD, val, val2);
+                val = new OperatorBin(LexAnalyzer.Lex.L_ADD, val, val2);
             }
-            if(LexAn.lex == LexAnalyzer.Lex.L_SUB) {
+            if (LexAn.lex == LexAnalyzer.Lex.L_SUB) {
                 LexAn.nextLex();
                 Expression val2 = getT();
-                return new OpertorBin(LexAnalyzer.Lex.L_SUB, val, val2);
+                val = new OperatorBin(LexAnalyzer.Lex.L_SUB, val, val2);
             }
         }
         return val;
@@ -42,15 +42,15 @@ public class Parse {
             if (LexAn.lex == LexAnalyzer.Lex.L_MUL) {
                 LexAn.nextLex();
                 Expression val2 = getP();
-                return new OpertorBin(LexAnalyzer.Lex.L_MUL, val, val2);
+                val = new OperatorBin(LexAnalyzer.Lex.L_MUL, val, val2);
             }
             if (LexAn.lex == LexAnalyzer.Lex.L_DIV) {
                 LexAn.nextLex();
                 Expression val2 = getP();
-                return new OpertorBin(LexAnalyzer.Lex.L_DIV, val, val2);
+                val = new OperatorBin(LexAnalyzer.Lex.L_DIV, val, val2);
             }
         }
-      return val;
+        return val;
     }
 
     public Expression getP() throws IOException {
@@ -60,14 +60,10 @@ public class Parse {
             val = getE();
             LexAn.expect(LexAnalyzer.Lex.L_RIGHT_PARENTHESIS);
         } else {
-            val = getN();
+            double value = Double.parseDouble(new String(LexAn.number));
+            LexAn.nextLex();
+            val = new Number(value);
         }
         return val;
-    }
-
-    public Expression getN() throws IOException {
-        double value = Double.parseDouble(new String(LexAn.number));
-        LexAn.nextLex();
-        return new Number(value);
     }
 }
