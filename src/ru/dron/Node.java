@@ -1,29 +1,163 @@
 package ru.dron;
 
+import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import static org.objectweb.asm.Opcodes.*;
 
 public class Node {
 
-    public void printDot(FileWriter code) throws IOException {}
+    public void printDot(FileWriter code) throws IOException {
+    }
 
-    public void printDotName(FileWriter code) throws IOException{}
+    public void printDotName(FileWriter code) throws IOException {
+    }
 
-    public void genCode(MethodVisitor mv) {}
+    public void genCode(MethodVisitor mv) {
+    }
 
+    public static Map<String, Integer> map = new HashMap<String, Integer>();
+}
+
+
+class Variable extends Expression {
+    private String name;
+
+    public String getName() {
+        return name;
+    }
+
+    public Variable(String varName) {
+        name = varName;
+    }
+
+    public void printDotName(FileWriter code) throws IOException {
+        code.write(name);
+    }
+
+    public void genCode(MethodVisitor mv) {
+        mv.visitVarInsn(DLOAD, Node.map.get(name));
+    }
+}
+
+class Statement extends Node {
+
+    public void printDot(FileWriter code) throws IOException {
+    }
+
+    public void printDotName(FileWriter code) throws IOException {
+    }
+
+    public void genCode(MethodVisitor mv) {
+    }
+
+}
+
+class While extends Statement {
+    private ArrayList<Statement> statmentsList;
+    private Relation rel;
+
+    public While(ArrayList<Statement> list, Relation relation) {
+        statmentsList = list;
+        rel = relation;
+    }
+
+    public void printDotName(FileWriter code) throws IOException {
+        code.write("while(");
+        rel.printDotName(code);
+        code.write(") {");
+        Iterator<Statement> iterator = statmentsList.iterator();
+        while(iterator.hasNext() == true){
+            iterator.next().printDotName(code);
+        }
+        code.write("}");
+    }
+
+    public void printDot(FileWriter code) throws IOException {
+        code.write("\"");
+        printDotName(code);
+        code.write("\" -> \"");
+        rel.printDotName(code);
+        code.write("\"\n");
+        rel.printDot(code);
+
+        Iterator<Statement> iterator = statmentsList.iterator();
+        while(iterator.hasNext() == true) {
+            Statement stmt = iterator.next();
+            code.write("\"");
+            printDotName(code);
+            code.write("\" -> \"");
+            stmt.printDotName(code);
+            code.write("\"\n");
+            stmt.printDot(code);
+        }
+    }
+
+    public void genCode(MethodVisitor mv) {
+        Label L1 = new Label();
+        rel.genCode(mv);
+        Label L2= new Label();
+        Iterator<Statement> iterator = statmentsList.iterator();
+        while(iterator.hasNext()) {
+            iterator.next().genCode(mv);
+        }
+    }
+}
+
+class Assign extends Statement {
+    private Variable var;
+    private Expression arg;
+
+    public Assign(Variable newVar, Expression newArg) {
+        var = newVar;
+        arg = newArg;
+    }
+
+    public void printDotName(FileWriter code) throws IOException {
+        code.write(var.getName());
+        code.write(" = ");
+        arg.printDotName(code);
+    }
+
+    public void printDot(FileWriter code) throws IOException {
+        code.write("\"");
+        printDotName(code);
+        code.write("\" -> \"");
+        var.printDotName(code);
+        code.write("\"\n");
+        code.write("\"");
+        printDotName(code);
+        code.write("\" -> \"");
+        arg.printDotName(code);
+        code.write("\"\n");
+        arg.printDot(code);
+    }
+
+    public void genCode(MethodVisitor mv) {
+        //   mv.visitLdcInsn(0.0);
+        //    mv.visitVarInsn(DSTORE, 1);
+        arg.genCode(mv);
+        mv.visitVarInsn(DSTORE, Node.map.get(var.getName()));
+    }
 }
 
 class Expression extends Node {
 
-    public void printDot(FileWriter code) throws IOException {}
+    public void printDot(FileWriter code) throws IOException {
+    }
 
-    public void printDotName(FileWriter code) throws IOException {}
+    public void printDotName(FileWriter code) throws IOException {
+    }
 
-    public void genCode(MethodVisitor mv) {}
+    public void genCode(MethodVisitor mv) {
+    }
 
 }
 
@@ -38,7 +172,6 @@ class Number extends Expression {
 
     public void genCode(MethodVisitor mv) {
         mv.visitLdcInsn(number);
-
     }
 
     public Number(double val) {
@@ -46,6 +179,85 @@ class Number extends Expression {
     }
 }
 
+
+class Relation extends Node {
+    private Expression val1;
+    private Expression val2;
+    private LexAnalyzer.Lex Lex;
+
+    public Relation(LexAnalyzer.Lex L, Expression value1, Expression value2) {
+        val1 = value1;
+        val2 = value2;
+        Lex = L;
+    }
+
+    public void printDot(FileWriter code) throws IOException {
+        code.write("\"");
+        printDotName(code);
+        code.write("\" -> \"");
+        val1.printDotName(code);
+        code.write("\"\n");
+        val1.printDot(code);
+
+        code.write("\"");
+        printDotName(code);
+        code.write("\" -> \"");
+        val2.printDotName(code);
+        code.write("\"\n");
+        val2.printDot(code);
+    }
+
+    public void printDotName(FileWriter code) throws IOException {
+        val1.printDotName(code);
+        switch (Lex) {
+            case L_EQ:
+                code.write(" == ");
+                break;
+            case L_NE:
+                code.write(" != ");
+                break;
+            case L_LE:
+                code.write(" <= ");
+                break;
+            case L_LT:
+                code.write(" < ");
+                break;
+            case L_GE:
+                code.write(" >= ");
+                break;
+            case L_GT:
+                code.write(" > ");
+                break;
+        }
+        val2.printDotName(code);
+    }
+
+    public void genCode(MethodVisitor mv) {
+        val1.genCode(mv);
+        val2.genCode(mv);
+        mv.visitInsn(DSUB);
+        switch (Lex) {
+            case L_EQ:
+                mv.visitInsn(IFEQ);
+                break;
+            case L_NE:
+                mv.visitInsn(IFNE);
+                break;
+            case L_GE:
+                mv.visitInsn(IFGE);
+                break;
+            case L_GT:
+                mv.visitInsn(IFGT);
+                break;
+            case L_LE:
+                mv.visitInsn(IFLE);
+                break;
+            case L_LT:
+                mv.visitInsn(IFLT);
+                break;
+        }
+    }
+}
 
 class OperatorBin extends Expression {
 

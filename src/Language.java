@@ -42,7 +42,7 @@ public class Language {
 
     public static void main(String[] args) throws IOException {
 
-        Reader readStr = new StringReader("10 * (3 + 2) * 4 / 3");
+        Reader readStr = new StringReader("while(x > 3) { y = x + 10;}");
 
         Parse parse = new Parse(readStr);
         Node result = parse.getG0();

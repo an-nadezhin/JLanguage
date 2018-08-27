@@ -17,15 +17,33 @@ public class LexAnalyzer {
         L_CONST,
         L_LEFT_PARENTHESIS,
         L_RIGHT_PARENTHESIS,
+        L_LEFT_CURLY_BRACE,
+        L_RIGHT_CURLY_BRACE,
+        L_SEMI_COLON,
+        L_EQ, // ==
+        L_NE, // NOT EQUAL (!=)
+        L_GE, // GREATER OR EQUAL (>=)
+        L_GT, // GREATER THAN (>)
+        L_LE, // LESS THAN OR EQUAL TO (<=)
+        L_LT, // LESS THAN (<)
+        L_ASSIGN, // =
+        L_ID,
+        L_WHILE,
+        L_IF,
+        L_RETURN,
         L_NOT_IMPLEMENTED
     }
 
+
+
     public Lex lex;
     public StringBuilder number;
+    public StringBuilder Id;
 
     public LexAnalyzer(Reader name) {
         sym = new LineNumberReader(name);
         number = new StringBuilder();
+        Id = new StringBuilder();
     }
 
     public Lex nextLex() throws IOException {
@@ -45,6 +63,46 @@ public class LexAnalyzer {
                 return lex = Lex.L_LEFT_PARENTHESIS;
             case ')':
                 return lex = Lex.L_RIGHT_PARENTHESIS;
+            case '{':
+                return lex = Lex.L_LEFT_CURLY_BRACE;
+            case '}':
+                return lex = Lex.L_RIGHT_CURLY_BRACE;
+            case ';':
+                return lex = Lex.L_SEMI_COLON;
+            case '=':
+                sym.mark(1);
+                ch = sym.read();
+                if (ch == '=') {
+                    return lex = Lex.L_EQ;
+                } else {
+                    sym.reset();
+                    return lex = Lex.L_ASSIGN;
+                }
+            case '>':
+                sym.mark(1);
+                ch = sym.read();
+                if(ch == '=') {
+                    return lex = Lex.L_GE;
+                } else {
+                    sym.reset();
+                    return lex = Lex.L_GT;
+                }
+            case '<':
+                sym.mark(1);
+                ch = sym.read();
+                if(ch == '=') {
+                    return lex = Lex.L_LE;
+                } else {
+                    sym.reset();
+                    return lex = Lex.L_LT;
+                }
+            case '!':
+                ch = sym.read();
+                if(ch == '=') {
+                    return lex = Lex.L_NE;
+                } else {
+                    Error(ch == '=', "Not right symbol");
+                }
         }
 
         if (ch >= '0' && ch <= '9') {
@@ -64,7 +122,22 @@ public class LexAnalyzer {
             sym.reset();
             return lex = Lex.L_CONST;
         }
-        return lex = Lex.L_NOT_IMPLEMENTED;
+
+        if(Character.isLetter(ch)) {
+            Id.setLength(0);
+            while(Character.isLetter(ch)||Character.isDigit(ch)) {
+                Id.append(Character.toChars(ch));
+                sym.mark(1);
+                ch = sym.read();
+            }
+            sym.reset();
+        }
+
+        if(Id.toString().equals("while")) return lex = Lex.L_WHILE;
+        if(Id.toString().equals("if")) return lex = Lex.L_IF;
+        if(Id.toString().equals("return")) return lex = Lex.L_RETURN;
+
+        return lex = Lex.L_ID;
     }
 
     private void skipSp() throws IOException {

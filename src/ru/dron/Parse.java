@@ -2,6 +2,7 @@ package ru.dron;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
 
 
 public class Parse {
@@ -13,8 +14,58 @@ public class Parse {
         LexAn.nextLex();
     }
 
-    public Expression getG0() throws IOException {
-        return getE();
+    public Statement getG0() throws IOException {
+        Node.map.put("x", Node.map.size());
+        Node.map.put("y", Node.map.size());
+
+        return getS();
+    }
+
+    public Statement getS() throws IOException {
+        Relation relation;
+        Expression val;
+        ArrayList<Statement> stmt = new ArrayList<Statement>();
+        switch (LexAn.lex) {
+            case L_WHILE:
+                LexAn.nextLex();
+                LexAn.expect(LexAnalyzer.Lex.L_LEFT_PARENTHESIS);
+                relation = getR();
+                LexAn.expect(LexAnalyzer.Lex.L_RIGHT_PARENTHESIS);
+                LexAn.expect(LexAnalyzer.Lex.L_LEFT_CURLY_BRACE);
+                while(LexAn.lex != LexAnalyzer.Lex.L_RIGHT_CURLY_BRACE) {
+                    stmt.add(getS());
+                }
+                LexAn.expect(LexAnalyzer.Lex.L_RIGHT_CURLY_BRACE);
+                return new While(stmt, relation);
+        }
+        if(Node.map.containsKey(LexAn.Id.toString()) == false) {
+            error("No such variable!");
+        }
+        Variable var = new Variable(LexAn.Id.toString());
+        LexAn.nextLex();
+        LexAn.expect(LexAnalyzer.Lex.L_ASSIGN);
+        val = getE();
+        LexAn.expect(LexAnalyzer.Lex.L_SEMI_COLON);
+            return new Assign(var, val);
+    }
+
+    public Relation getR() throws IOException {
+        Expression val1 = getE();
+        LexAnalyzer.Lex op = LexAn.lex;
+        LexAn.nextLex();
+        Expression val2 = getE();
+        switch(op) {
+            case L_EQ:
+            case L_NE:
+            case L_GE:
+            case L_GT:
+            case L_LE:
+            case L_LT:
+                break;
+                default:
+                    error("no such relation");
+        }
+        return new Relation(op, val1, val2);
     }
 
     public Expression getE() throws IOException {
@@ -54,16 +105,32 @@ public class Parse {
     }
 
     public Expression getP() throws IOException {
-        Expression val;
-        if (LexAn.lex == LexAnalyzer.Lex.L_LEFT_PARENTHESIS) {
-            LexAn.nextLex();
-            val = getE();
-            LexAn.expect(LexAnalyzer.Lex.L_RIGHT_PARENTHESIS);
-        } else {
-            double value = Double.parseDouble(new String(LexAn.number));
-            LexAn.nextLex();
-            val = new Number(value);
+
+        switch (LexAn.lex) {
+            case L_CONST:
+                double value = Double.parseDouble(new String(LexAn.number));
+                LexAn.nextLex();
+                return new Number(value);
+            case L_LEFT_PARENTHESIS:
+                LexAn.nextLex();
+                Expression val = getE();
+                LexAn.expect(LexAnalyzer.Lex.L_RIGHT_PARENTHESIS);
+                return val;
+            case L_ID:
+                if(Node.map.containsKey(LexAn.Id.toString()) == true){
+                    LexAn.nextLex();
+                    return new Variable(LexAn.Id.toString());
+                } else {
+                    error("No such variable!");
+                }
+                default:
+                    error("invalid expression");
         }
-        return val;
+        return null;
+    }
+
+    public void error(String message) {
+        System.out.println(message);
+        System.exit(10);
     }
 }
