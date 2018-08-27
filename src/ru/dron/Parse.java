@@ -15,8 +15,8 @@ public class Parse {
     }
 
     public Statement getG0() throws IOException {
-        Node.map.put("x", Node.map.size());
-        Node.map.put("y", Node.map.size());
+        Node.map.put("x", Node.map.size() + 1);
+        Node.map.put("y", Node.map.size() + 1);
 
         return getS();
     }
@@ -117,7 +117,7 @@ public class Parse {
     }
 
     public Expression getP() throws IOException {
-
+        Expression val;
         switch (LexAn.lex) {
             case L_CONST:
                 double value = Double.parseDouble(new String(LexAn.number));
@@ -125,9 +125,33 @@ public class Parse {
                 return new Number(value);
             case L_LEFT_PARENTHESIS:
                 LexAn.nextLex();
-                Expression val = getE();
+                val = getE();
                 LexAn.expect(LexAnalyzer.Lex.L_RIGHT_PARENTHESIS);
                 return val;
+            case L_SIN:
+                LexAn.nextLex();
+                LexAn.expect(LexAnalyzer.Lex.L_LEFT_PARENTHESIS);
+                val = getE();
+                LexAn.expect(LexAnalyzer.Lex.L_RIGHT_PARENTHESIS);
+                return new OperatorUn(LexAnalyzer.Lex.L_SIN, val);
+            case L_COS:
+                LexAn.nextLex();
+                LexAn.expect(LexAnalyzer.Lex.L_LEFT_PARENTHESIS);
+                val = getE();
+                LexAn.expect(LexAnalyzer.Lex.L_RIGHT_PARENTHESIS);
+                return new OperatorUn(LexAnalyzer.Lex.L_COS, val);
+            case L_SQRT:
+                LexAn.nextLex();
+                LexAn.expect(LexAnalyzer.Lex.L_LEFT_PARENTHESIS);
+                val = getE();
+                LexAn.expect(LexAnalyzer.Lex.L_RIGHT_PARENTHESIS);
+                return new OperatorUn(LexAnalyzer.Lex.L_SQRT, val);
+            case L_LN:
+                LexAn.nextLex();
+                LexAn.expect(LexAnalyzer.Lex.L_LEFT_PARENTHESIS);
+                val = getE();
+                LexAn.expect(LexAnalyzer.Lex.L_RIGHT_PARENTHESIS);
+                return new OperatorUn(LexAnalyzer.Lex.L_LN, val);
             case L_ID:
                 if (Node.map.containsKey(LexAn.Id.toString()) == true) {
                     LexAn.nextLex();

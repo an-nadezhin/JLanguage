@@ -95,12 +95,14 @@ class If extends Statement {
             printDotName(code);
             code.write("\" -> \"");
             stmt.printDotName(code);
-            code.write(";\"\n");
+            code.write("\"\n");
             stmt.printDot(code);
         }
     }
 
     public void genCode(MethodVisitor mv) {
+  //      mv.visitLdcInsn(4.0);
+  //      mv.visitVarInsn(DSTORE, 1);
         Label end = new Label();
         rel.genCode(mv, end);
         Iterator<Statement> iterator = statementsList.iterator();
@@ -146,12 +148,13 @@ class While extends Statement {
             printDotName(code);
             code.write("\" -> \"");
             stmt.printDotName(code);
-            code.write(";\"\n");
+            code.write("\"\n");
             stmt.printDot(code);
         }
     }
 
     public void genCode(MethodVisitor mv) {
+
         Label start = new Label();
         Label end = new Label();
         mv.visitLabel(start);
@@ -196,6 +199,9 @@ class Assign extends Statement {
     }
 
     public void genCode(MethodVisitor mv) {
+
+   //     mv.visitLdcInsn(7.0);
+   //     mv.visitVarInsn(DSTORE, 2);
         arg.genCode(mv);
         mv.visitVarInsn(DSTORE, Node.map.get(var.getName()));
     }
@@ -382,6 +388,68 @@ class OperatorBin extends Expression {
                 Left.printDotName(code);
                 code.write(" / ");
                 Right.printDotName(code);
+                break;
+        }
+    }
+}
+
+class OperatorUn extends Expression {
+    private LexAnalyzer.Lex Lex;
+    private Expression arg;
+
+    public OperatorUn(LexAnalyzer.Lex lex, Expression newArg) {
+        Lex = lex;
+        arg = newArg;
+    }
+
+    public void printDotName(FileWriter code) throws IOException {
+        switch (Lex) {
+            case L_SIN:
+                code.write("sin(");
+                arg.printDotName(code);
+                code.write(")");
+                break;
+            case L_COS:
+                code.write("cos(");
+                arg.printDotName(code);
+                code.write(")");
+                break;
+            case L_LN:
+                code.write("ln(");
+                arg.printDotName(code);
+                code.write(")");
+                break;
+            case L_SQRT:
+                code.write("sqrt(");
+                arg.printDotName(code);
+                code.write(")");
+                break;
+        }
+    }
+
+    public void printDot(FileWriter code) throws IOException {
+        code.write("\"");
+        printDotName(code);
+        code.write("\" -> \"");
+        arg.printDotName(code);
+        code.write("\"\n");
+        arg.printDot(code);
+    }
+
+    public void genCode(MethodVisitor mv) {
+        arg.genCode(mv);
+        switch (Lex) {
+            case L_SIN:
+                mv.visitMethodInsn(INVOKESTATIC, "java.lang.Math", "sin", "(D)D");
+                break;
+            case L_COS:
+                mv.visitMethodInsn(INVOKESTATIC, "java.lang.Math", "cos", "(D)D");
+                break;
+            case L_LN:
+                mv.visitMethodInsn(INVOKESTATIC, "java.lang.Math", "exp", "(D)D");
+                break;
+            case L_SQRT:
+                mv.visitMethodInsn(INVOKESTATIC, "java.lang.Math", "sqrt", "(D)D");
                 break;
         }
     }

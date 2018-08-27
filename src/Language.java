@@ -42,7 +42,7 @@ public class Language {
 
     public static void main(String[] args) throws IOException {
 
-        Reader readStr = new StringReader("if(x <= 3) { y = x + 10; x = y + 2;}");
+        Reader readStr = new StringReader("if(x >= 3) {y = sin(x) + 8;}");
 
         Parse parse = new Parse(readStr);
         Node result = parse.getG0();

@@ -31,6 +31,11 @@ public class LexAnalyzer {
         L_WHILE,
         L_IF,
         L_RETURN,
+        L_DOUBLE,
+        L_SIN,
+        L_COS,
+        L_LN,
+        L_SQRT,
         L_NOT_IMPLEMENTED
     }
 
@@ -135,6 +140,11 @@ public class LexAnalyzer {
         if (Id.toString().equals("while")) return lex = Lex.L_WHILE;
         if (Id.toString().equals("if")) return lex = Lex.L_IF;
         if (Id.toString().equals("return")) return lex = Lex.L_RETURN;
+        if (Id.toString().equals("double")) return lex = Lex.L_DOUBLE;
+        if (Id.toString().equals("sin")) return lex = Lex.L_SIN;
+        if (Id.toString().equals("cos")) return lex = Lex.L_COS;
+        if (Id.toString().equals("sqrt")) return lex = Lex.L_SQRT;
+        if (Id.toString().equals("ln")) return lex = Lex.L_LN;
 
         return lex = Lex.L_ID;
     }
