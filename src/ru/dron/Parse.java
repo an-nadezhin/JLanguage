@@ -32,13 +32,25 @@ public class Parse {
                 relation = getR();
                 LexAn.expect(LexAnalyzer.Lex.L_RIGHT_PARENTHESIS);
                 LexAn.expect(LexAnalyzer.Lex.L_LEFT_CURLY_BRACE);
-                while(LexAn.lex != LexAnalyzer.Lex.L_RIGHT_CURLY_BRACE) {
+                while (LexAn.lex != LexAnalyzer.Lex.L_RIGHT_CURLY_BRACE) {
                     stmt.add(getS());
                 }
                 LexAn.expect(LexAnalyzer.Lex.L_RIGHT_CURLY_BRACE);
                 return new While(stmt, relation);
+            case L_IF:
+                LexAn.nextLex();
+                LexAn.expect(LexAnalyzer.Lex.L_LEFT_PARENTHESIS);
+                relation = getR();
+                LexAn.expect(LexAnalyzer.Lex.L_RIGHT_PARENTHESIS);
+                LexAn.expect(LexAnalyzer.Lex.L_LEFT_CURLY_BRACE);
+                while (LexAn.lex != LexAnalyzer.Lex.L_RIGHT_CURLY_BRACE) {
+                    stmt.add(getS());
+                }
+                LexAn.expect(LexAnalyzer.Lex.L_RIGHT_CURLY_BRACE);
+                return new If(stmt, relation);
         }
-        if(Node.map.containsKey(LexAn.Id.toString()) == false) {
+
+        if (Node.map.containsKey(LexAn.Id.toString()) == false) {
             error("No such variable!");
         }
         Variable var = new Variable(LexAn.Id.toString());
@@ -46,7 +58,7 @@ public class Parse {
         LexAn.expect(LexAnalyzer.Lex.L_ASSIGN);
         val = getE();
         LexAn.expect(LexAnalyzer.Lex.L_SEMI_COLON);
-            return new Assign(var, val);
+        return new Assign(var, val);
     }
 
     public Relation getR() throws IOException {
@@ -54,7 +66,7 @@ public class Parse {
         LexAnalyzer.Lex op = LexAn.lex;
         LexAn.nextLex();
         Expression val2 = getE();
-        switch(op) {
+        switch (op) {
             case L_EQ:
             case L_NE:
             case L_GE:
@@ -62,8 +74,8 @@ public class Parse {
             case L_LE:
             case L_LT:
                 break;
-                default:
-                    error("no such relation");
+            default:
+                error("no such relation");
         }
         return new Relation(op, val1, val2);
     }
@@ -117,14 +129,14 @@ public class Parse {
                 LexAn.expect(LexAnalyzer.Lex.L_RIGHT_PARENTHESIS);
                 return val;
             case L_ID:
-                if(Node.map.containsKey(LexAn.Id.toString()) == true){
+                if (Node.map.containsKey(LexAn.Id.toString()) == true) {
                     LexAn.nextLex();
                     return new Variable(LexAn.Id.toString());
                 } else {
                     error("No such variable!");
                 }
-                default:
-                    error("invalid expression");
+            default:
+                error("invalid expression");
         }
         return null;
     }

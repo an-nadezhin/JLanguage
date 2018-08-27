@@ -60,21 +60,21 @@ class Statement extends Node {
 
 }
 
-class While extends Statement {
-    private ArrayList<Statement> statmentsList;
+class If extends Statement {
+    private ArrayList<Statement> statementsList;
     private Relation rel;
 
-    public While(ArrayList<Statement> list, Relation relation) {
-        statmentsList = list;
+    public If(ArrayList<Statement> list, Relation relation) {
+        statementsList = list;
         rel = relation;
     }
 
     public void printDotName(FileWriter code) throws IOException {
-        code.write("while(");
+        code.write("if(");
         rel.printDotName(code);
         code.write(") {");
-        Iterator<Statement> iterator = statmentsList.iterator();
-        while(iterator.hasNext() == true){
+        Iterator<Statement> iterator = statementsList.iterator();
+        while (iterator.hasNext() == true) {
             iterator.next().printDotName(code);
         }
         code.write("}");
@@ -88,26 +88,80 @@ class While extends Statement {
         code.write("\"\n");
         rel.printDot(code);
 
-        Iterator<Statement> iterator = statmentsList.iterator();
-        while(iterator.hasNext() == true) {
+        Iterator<Statement> iterator = statementsList.iterator();
+        while (iterator.hasNext() == true) {
             Statement stmt = iterator.next();
             code.write("\"");
             printDotName(code);
             code.write("\" -> \"");
             stmt.printDotName(code);
-            code.write("\"\n");
+            code.write(";\"\n");
             stmt.printDot(code);
         }
     }
 
     public void genCode(MethodVisitor mv) {
-        Label L1 = new Label();
-        rel.genCode(mv);
-        Label L2= new Label();
-        Iterator<Statement> iterator = statmentsList.iterator();
-        while(iterator.hasNext()) {
+        Label end = new Label();
+        rel.genCode(mv, end);
+        Iterator<Statement> iterator = statementsList.iterator();
+        while (iterator.hasNext()) {
             iterator.next().genCode(mv);
         }
+        mv.visitLabel(end);
+    }
+}
+
+class While extends Statement {
+    private ArrayList<Statement> statementsList;
+    private Relation rel;
+
+    public While(ArrayList<Statement> list, Relation relation) {
+        statementsList = list;
+        rel = relation;
+    }
+
+    public void printDotName(FileWriter code) throws IOException {
+        code.write("while(");
+        rel.printDotName(code);
+        code.write(") {");
+        Iterator<Statement> iterator = statementsList.iterator();
+        while (iterator.hasNext() == true) {
+            iterator.next().printDotName(code);
+        }
+        code.write("}");
+    }
+
+    public void printDot(FileWriter code) throws IOException {
+        code.write("\"");
+        printDotName(code);
+        code.write("\" -> \"");
+        rel.printDotName(code);
+        code.write("\"\n");
+        rel.printDot(code);
+
+        Iterator<Statement> iterator = statementsList.iterator();
+        while (iterator.hasNext() == true) {
+            Statement stmt = iterator.next();
+            code.write("\"");
+            printDotName(code);
+            code.write("\" -> \"");
+            stmt.printDotName(code);
+            code.write(";\"\n");
+            stmt.printDot(code);
+        }
+    }
+
+    public void genCode(MethodVisitor mv) {
+        Label start = new Label();
+        Label end = new Label();
+        mv.visitLabel(start);
+        rel.genCode(mv, end);
+        Iterator<Statement> iterator = statementsList.iterator();
+        while (iterator.hasNext()) {
+            iterator.next().genCode(mv);
+        }
+        mv.visitJumpInsn(GOTO, start);
+        mv.visitLabel(end);
     }
 }
 
@@ -124,6 +178,7 @@ class Assign extends Statement {
         code.write(var.getName());
         code.write(" = ");
         arg.printDotName(code);
+        code.write(";");
     }
 
     public void printDot(FileWriter code) throws IOException {
@@ -141,8 +196,6 @@ class Assign extends Statement {
     }
 
     public void genCode(MethodVisitor mv) {
-        //   mv.visitLdcInsn(0.0);
-        //    mv.visitVarInsn(DSTORE, 1);
         arg.genCode(mv);
         mv.visitVarInsn(DSTORE, Node.map.get(var.getName()));
     }
@@ -232,28 +285,28 @@ class Relation extends Node {
         val2.printDotName(code);
     }
 
-    public void genCode(MethodVisitor mv) {
+    public void genCode(MethodVisitor mv, Label end) {
         val1.genCode(mv);
         val2.genCode(mv);
-        mv.visitInsn(DSUB);
+        mv.visitInsn(DCMPG);
         switch (Lex) {
             case L_EQ:
-                mv.visitInsn(IFEQ);
+                mv.visitJumpInsn(IFNE, end);
                 break;
             case L_NE:
-                mv.visitInsn(IFNE);
+                mv.visitJumpInsn(IFEQ, end);
                 break;
             case L_GE:
-                mv.visitInsn(IFGE);
+                mv.visitJumpInsn(IFLT, end);
                 break;
             case L_GT:
-                mv.visitInsn(IFGT);
+                mv.visitJumpInsn(IFLE, end);
                 break;
             case L_LE:
-                mv.visitInsn(IFLE);
+                mv.visitJumpInsn(IFGT, end);
                 break;
             case L_LT:
-                mv.visitInsn(IFLT);
+                mv.visitJumpInsn(IFGE, end);
                 break;
         }
     }

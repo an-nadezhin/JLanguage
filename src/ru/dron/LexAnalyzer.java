@@ -35,7 +35,6 @@ public class LexAnalyzer {
     }
 
 
-
     public Lex lex;
     public StringBuilder number;
     public StringBuilder Id;
@@ -81,7 +80,7 @@ public class LexAnalyzer {
             case '>':
                 sym.mark(1);
                 ch = sym.read();
-                if(ch == '=') {
+                if (ch == '=') {
                     return lex = Lex.L_GE;
                 } else {
                     sym.reset();
@@ -90,7 +89,7 @@ public class LexAnalyzer {
             case '<':
                 sym.mark(1);
                 ch = sym.read();
-                if(ch == '=') {
+                if (ch == '=') {
                     return lex = Lex.L_LE;
                 } else {
                     sym.reset();
@@ -98,7 +97,7 @@ public class LexAnalyzer {
                 }
             case '!':
                 ch = sym.read();
-                if(ch == '=') {
+                if (ch == '=') {
                     return lex = Lex.L_NE;
                 } else {
                     Error(ch == '=', "Not right symbol");
@@ -123,9 +122,9 @@ public class LexAnalyzer {
             return lex = Lex.L_CONST;
         }
 
-        if(Character.isLetter(ch)) {
+        if (Character.isLetter(ch)) {
             Id.setLength(0);
-            while(Character.isLetter(ch)||Character.isDigit(ch)) {
+            while (Character.isLetter(ch) || Character.isDigit(ch)) {
                 Id.append(Character.toChars(ch));
                 sym.mark(1);
                 ch = sym.read();
@@ -133,9 +132,9 @@ public class LexAnalyzer {
             sym.reset();
         }
 
-        if(Id.toString().equals("while")) return lex = Lex.L_WHILE;
-        if(Id.toString().equals("if")) return lex = Lex.L_IF;
-        if(Id.toString().equals("return")) return lex = Lex.L_RETURN;
+        if (Id.toString().equals("while")) return lex = Lex.L_WHILE;
+        if (Id.toString().equals("if")) return lex = Lex.L_IF;
+        if (Id.toString().equals("return")) return lex = Lex.L_RETURN;
 
         return lex = Lex.L_ID;
     }
@@ -145,12 +144,13 @@ public class LexAnalyzer {
             ch = sym.read();
         }
     }
+
     public void expect(Lex l) throws IOException, RuntimeException {
         Error(l != lex, "ERROR : expect lex not found!");
         nextLex();
     }
 
     private void Error(boolean condition, String messege) {
-        if(condition == true) throw new RuntimeException(messege);
+        if (condition == true) throw new RuntimeException(messege);
     }
 }
