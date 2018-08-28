@@ -33,7 +33,6 @@ public class Language {
         mv.visitEnd();
 
         cw.visitEnd();
-
         //save bytecode into disk
         FileOutputStream out = new FileOutputStream("ownLangProg.class");
         out.write(cw.toByteArray());
@@ -42,7 +41,7 @@ public class Language {
 
     public static void main(String[] args) throws IOException {
 
-        Reader readStr = new StringReader("if(x >= 3) {y = sin(x) + 8;}");
+        Reader readStr = new StringReader("if(x > 3) {print(3);}");
 
         Parse parse = new Parse(readStr);
         Node result = parse.getG0();

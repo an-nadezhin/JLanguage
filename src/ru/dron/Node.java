@@ -60,6 +60,65 @@ class Statement extends Node {
 
 }
 
+class Print extends Statement {
+    Expression val;
+
+    public Print(Expression newVal) {
+        val = newVal;
+    }
+
+    public void printDotName(FileWriter code) throws IOException {
+        code.write("print(");
+        val.printDotName(code);
+        code.write(")");
+    }
+
+    public void printDot(FileWriter code) throws IOException {
+        code.write("\"");
+        printDotName(code);
+        code.write("\" -> \"");
+        val.printDotName(code);
+        code.write("\"");
+        val.printDot(code);
+    }
+
+    public void genCode(MethodVisitor mv) {
+
+        mv.visitFieldInsn(GETSTATIC,"java/lang/System", "out", "Ljava/io/PrintStream;"); //put System.out to operand stack
+        val.genCode(mv);
+        mv.visitMethodInsn(INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V");
+    }
+}
+
+class Return extends Statement {
+    private Expression arg;
+
+    public Return(Expression newArg) {
+        arg = newArg;
+    }
+
+    public void printDotName(FileWriter code) throws IOException {
+        code.write("return ");
+        arg.printDotName(code);
+    }
+
+    public void printDot(FileWriter code) throws IOException {
+        code.write("\"");
+        printDotName(code);
+        code.write("\" -> \"");
+        arg.printDotName(code);
+        code.write("\"");
+        arg.printDot(code);
+    }
+
+    public void genCode(MethodVisitor mv) {
+ //       mv.visitLdcInsn(4.0);
+ //       mv.visitVarInsn(DSTORE, 2);
+        arg.genCode(mv);
+        mv.visitInsn(DRETURN);
+    }
+}
+
 class If extends Statement {
     private ArrayList<Statement> statementsList;
     private Relation rel;
@@ -101,8 +160,10 @@ class If extends Statement {
     }
 
     public void genCode(MethodVisitor mv) {
-  //      mv.visitLdcInsn(4.0);
-  //      mv.visitVarInsn(DSTORE, 1);
+  //here     mv.visitLdcInsn(4.0);
+ //here      mv.visitVarInsn(DSTORE, 2);
+        mv.visitLdcInsn(4.0);
+        mv.visitVarInsn(DSTORE, 1);
         Label end = new Label();
         rel.genCode(mv, end);
         Iterator<Statement> iterator = statementsList.iterator();

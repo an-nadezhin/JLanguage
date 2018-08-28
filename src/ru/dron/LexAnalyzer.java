@@ -36,6 +36,7 @@ public class LexAnalyzer {
         L_COS,
         L_LN,
         L_SQRT,
+        L_PRINT,
         L_NOT_IMPLEMENTED
     }
 
@@ -145,6 +146,7 @@ public class LexAnalyzer {
         if (Id.toString().equals("cos")) return lex = Lex.L_COS;
         if (Id.toString().equals("sqrt")) return lex = Lex.L_SQRT;
         if (Id.toString().equals("ln")) return lex = Lex.L_LN;
+        if (Id.toString().equals("print")) return lex = Lex.L_PRINT;
 
         return lex = Lex.L_ID;
     }
