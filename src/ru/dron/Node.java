@@ -83,10 +83,13 @@ class Print extends Statement {
     }
 
     public void genCode(MethodVisitor mv) {
+ //       mv.visitLdcInsn(4.0);
+ //       mv.visitVarInsn(DSTORE, 1);
 
         mv.visitFieldInsn(GETSTATIC,"java/lang/System", "out", "Ljava/io/PrintStream;"); //put System.out to operand stack
         val.genCode(mv);
-        mv.visitMethodInsn(INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V");
+        mv.visitMethodInsn(INVOKEVIRTUAL, "java/io/PrintStream", "println", "(D)V");
+  //      mv.visitMethodInsn(INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V");
     }
 }
 
@@ -162,8 +165,8 @@ class If extends Statement {
     public void genCode(MethodVisitor mv) {
   //here     mv.visitLdcInsn(4.0);
  //here      mv.visitVarInsn(DSTORE, 2);
-        mv.visitLdcInsn(4.0);
-        mv.visitVarInsn(DSTORE, 1);
+   //     mv.visitLdcInsn(4.0);
+   //     mv.visitVarInsn(DSTORE, 1);
         Label end = new Label();
         rel.genCode(mv, end);
         Iterator<Statement> iterator = statementsList.iterator();
@@ -215,7 +218,13 @@ class While extends Statement {
     }
 
     public void genCode(MethodVisitor mv) {
-
+        Label L1 = new Label();
+        Label L2 = new Label();
+        mv.visitLabel(L1);
+        mv.visitLdcInsn(4.0);
+        mv.visitVarInsn(DSTORE, 1);
+        mv.visitLdcInsn(8.0);
+        mv.visitVarInsn(DSTORE, 3);
         Label start = new Label();
         Label end = new Label();
         mv.visitLabel(start);
@@ -226,6 +235,9 @@ class While extends Statement {
         }
         mv.visitJumpInsn(GOTO, start);
         mv.visitLabel(end);
+        mv.visitLabel(L2);
+        mv.visitLocalVariable("x", "D", null, L1, L2, 1);
+        mv.visitLocalVariable("y", "D", null, L1, L2, 3);
     }
 }
 
@@ -262,7 +274,8 @@ class Assign extends Statement {
     public void genCode(MethodVisitor mv) {
 
    //     mv.visitLdcInsn(7.0);
-   //     mv.visitVarInsn(DSTORE, 2);
+   //     mv.visitVarInsn(DSTORE, 1);
+
         arg.genCode(mv);
         mv.visitVarInsn(DSTORE, Node.map.get(var.getName()));
     }

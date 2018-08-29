@@ -21,7 +21,7 @@ public class Language {
     }
 
     static void genBytecode(Node node) throws IOException {
-        ClassWriter cw = new ClassWriter(0);
+        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
 
         cw.visit(V1_6, ACC_PUBLIC + ACC_SUPER, "ownLangProg", null, "java/lang/Object", null);
 
@@ -29,7 +29,7 @@ public class Language {
         mv.visitCode();
         node.genCode(mv);
         mv.visitInsn(RETURN);
-        mv.visitMaxs(2, 1);
+        mv.visitMaxs(0, 0);
         mv.visitEnd();
 
         cw.visitEnd();
@@ -41,7 +41,7 @@ public class Language {
 
     public static void main(String[] args) throws IOException {
 
-        Reader readStr = new StringReader("if(x > 3) {print(3);}");
+        Reader readStr = new StringReader("while(x < 50) {x = x + y; print(x);}");
 
         Parse parse = new Parse(readStr);
         Node result = parse.getG0();

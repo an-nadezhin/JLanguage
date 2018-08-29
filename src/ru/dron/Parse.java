@@ -15,8 +15,11 @@ public class Parse {
     }
 
     public Statement getG0() throws IOException {
-        Node.map.put("x", Node.map.size() + 1);
-   //     Node.map.put("y", Node.map.size() + 1);
+        Node.map.put("myString", Node.map.size());
+        Node.map.put("x", Node.map.size());
+        Node.map.put("y", Node.map.size());
+        Node.map.put("x", 1);
+        Node.map.put("y", 3);
 
         return getS();
     }
